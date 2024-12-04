@@ -42,6 +42,7 @@ except json.JSONDecodeError:
     time.sleep(30)
     sys.exit()
 
+
 def update_config_version(repo_owner, repo_name, new_version):
     try:
         for repo_config in config:
@@ -56,6 +57,7 @@ def update_config_version(repo_owner, repo_name, new_version):
     except Exception as e:
         print(f"更新配置文件失败: {e}")
         logging.error(f"更新配置文件失败: {e}")
+
 
 def dl_pkg(dl_url, prog_name, pkg_name):
     try:
