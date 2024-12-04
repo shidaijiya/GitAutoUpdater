@@ -15,7 +15,8 @@ logging.basicConfig(filename=f'./log/update.log', level=logging.INFO,
                     filemode='a')
 
 # 配置文件路径
-config_file_path = "update_config.json"
+script_dir = os.path.dirname(os.path.abspath(__file__))
+config_file_path = f"{script_dir}/update_config.json"
 inst_dir = "/root/"
 
 # 获取系统代理设置
