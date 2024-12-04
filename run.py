@@ -29,7 +29,7 @@ proxies = {
 try:
     if not os.path.exists(config_file_path):
         print(f"文件 {config_file_path} 不存在\n30s后退出...")
-        logging.error("文件 {config_file_path} 不存在")
+        logging.error(f"文件 {config_file_path} 不存在")
         time.sleep(30)
         sys.exit()
 
@@ -42,6 +42,20 @@ except json.JSONDecodeError:
     time.sleep(30)
     sys.exit()
 
+def update_config_version(repo_owner, repo_name, new_version):
+    try:
+        for repo_config in config:
+            if repo_config["owner"] == repo_owner and repo_config["repo"] == repo_name:
+                repo_config["current_version"] = new_version
+                # 保存更新后的配置文件
+                with open(config_file_path, 'w', encoding='utf-8') as f:
+                    json.dump(config, f, indent=4, ensure_ascii=False)
+                print(f"配置文件更新成功: {repo_owner}/{repo_name} 新版本为 {new_version}")
+                logging.info(f"配置文件更新成功: {repo_owner}/{repo_name} 新版本为 {new_version}")
+                break
+    except Exception as e:
+        print(f"更新配置文件失败: {e}")
+        logging.error(f"更新配置文件失败: {e}")
 
 def dl_pkg(dl_url, prog_name, pkg_name):
     try:
@@ -63,8 +77,6 @@ def dl_pkg(dl_url, prog_name, pkg_name):
         print(f"\n下载完成! {file_path}")
         logging.info(f"下载完成! {file_path}")
         return inst_path
-
-
     except Exception as e:
         print(f"未知错误: {e}")
         logging.error(f"下载失败: {e}")
@@ -80,14 +92,9 @@ def start_inst(inst_path, prog_name, pkg_name):
                 f"nohup ./{prog_name} > {prog_name}.log 2>&1 &")
         result = subprocess.run(cmds, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         if result.returncode == 0:
-            print(f"{prog_name}更新完成,并且已成功在后台运行!")
-            logging.info(f"{prog_name}更新完成,并且已成功在后台运行!")
             return True
         else:
-            print(f"{prog_name}更新失败")
-            logging.error(f"{prog_name}更新失败")
             return False
-
     except Exception as e:
         print(f"未知错误: {e}")
         logging.error(f"安装失败: {e}")
@@ -96,7 +103,6 @@ def start_inst(inst_path, prog_name, pkg_name):
 
 def kill_prog(prog_name):
     try:
-
         result = subprocess.run(
             ["pgrep", prog_name],
             stdout=subprocess.PIPE,
@@ -113,7 +119,6 @@ def kill_prog(prog_name):
         else:
             print(f"{prog_name}未运行")
             logging.info(f"{prog_name}未运行")
-
     except Exception as e:
         print(f"An error occurred: {e}")
         logging.error(f"停止进程失败: {e}")
@@ -128,7 +133,6 @@ for repo_config in config:
     pkg_name = repo_config["pkg_name"]
     prog_name = repo_config["prog_name"]
     current_version = repo_config["current_version"]
-
 
     try:
         releases_check_api = f"https://api.github.com/repos/{owner}/{repo}/releases/latest"
@@ -164,9 +168,9 @@ for repo_config in config:
         if start_inst(inst_path, prog_name, pkg_name):
             print(f"{prog_name}更新完成,并且已成功在后台运行!")
             logging.info(f"{prog_name}更新完成,并且已成功在后台运行!")
-        else:
-            print(f"{prog_name}更新失败")
-            logging.error(f"{prog_name}更新失败")
+            # 更新配置文件中的版本号
+            update_config_version(owner, repo, version)
+
 
     except Exception as e:
         print(f"未知错误: {e}")
