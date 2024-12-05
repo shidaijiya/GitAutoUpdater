@@ -106,7 +106,7 @@ pip install requests wget
 然后，运行 `run.py` 脚本进行更新：
 
 ```bash
-python run.py
+python3 run.py
 ```
 
 脚本会自动检查配置文件中列出的每个程序仓库，获取最新版本，下载程序包并解压。如果本地版本不是最新的，脚本会停止当前程序，更新程序并在后台重新启动。
